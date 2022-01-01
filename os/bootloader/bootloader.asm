@@ -46,6 +46,109 @@ start:
     cli
     jmp .halt
 
+; Converts an LBA address to a CHS address
+; Parameters:
+;   - ax: LBA address
+; Returns:
+;   - cx [bits 0-5]: sector number
+;   - cx [bits 6-15]: cylinder
+;   - dh: head
+;
+lba_2_chs:
+    push ax
+    push dx
+    xor dx, dx                       ; dx = 0
+    div word [bpb_sectors_per_track] ; ax = LBA / SectorsPerTrack
+                                     ; dx = LBA % SectorsPerTrack
+    inc dx                           ; dx = LBA % SectorsPerTrack + 1 = sector
+    mov cx, dx
+
+    xor dx, dx                       ; dx = 0
+    div word [bpb_heads]             ; ax = (LBA / SectorsPerTrack) / Heads = cylinder
+                                     ; dx = (LBA / SectorsPerTrack) % Heads = head
+    
+    mov dh, dl                       ; dh = head
+    mov ch, al                       ; ch = cylinder (8 lower bits)
+    shl ah, 6
+    or cl, ah                        ; set 2 upper bits
+
+    pop ax
+    mov dl, al
+    pop ax
+    ret
+
+; Reads sectors from a disk
+; Parameters:
+;   - ax: LBA address
+;   - cl: number of sectors to read (up to 128)
+;   - dl: drive number
+;   - es:bx: memory address where to store read data
+;
+read_disk:
+    push ax
+    push bx
+    push dx
+    push di
+
+    push cx
+    call lba_2_chs
+    pop ax
+
+    mov ah, 02h
+    mov di, 3
+
+.retry:
+    pusha
+    stc
+
+    int 13h
+    jnc .done
+
+    ; failed
+    popa
+    call disk_reset
+
+    dec di
+    test di, di
+    jnz .retry
+
+.fail:
+    ; can't read floppy
+    jmp floppy_error
+
+
+.done:
+    popa
+    pop di
+    pop dx
+    pop bx
+    pop ax
+    ret
+
+;
+; Resets disk controller
+; Parameters:
+;   dl: drive number
+;
+disk_reset:
+    pusha
+    mov ah, 0
+    stc
+    int 13h
+    jc floppy_error
+    popa
+    ret
+
+floppy_error:
+    mov si, msg_floppy_read_error
+    call print
+    jmp wait_for_key_and_reboot
+
+wait_for_key_and_reboot:
+    mov ah, 0
+    int 16h
+    jmp 0FFFFh:0
+
 ;
 ; Prints string to the screen
 ; Parameters
