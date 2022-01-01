@@ -73,4 +73,7 @@ print:
     pop si
     ret
 
-msg_hello: db 'Hello World!', ENDL, 0
+msg_hello: db '', ENDL, 0
+
+times 510 - ($ - $$) db 0
+dw 0xAA55
