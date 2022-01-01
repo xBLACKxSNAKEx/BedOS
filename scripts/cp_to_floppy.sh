@@ -1,7 +1,7 @@
 #!/bin/bash
 
-./mount.sh
-cd ../build/kernel
+./scripts/mount.sh
+cd build/kernel
 cp -r . L:/
-cd ../../scripts
-./mount.sh -u
+cd ../..
+./scripts/mount.sh -u

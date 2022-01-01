@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ "$#" -eq 0 ]; then
-    imdisk -a -f ../build/floppy.img -m L:
+    imdisk -a -f build/floppy.img -m L:
 elif [ "$#" -eq 1 ] && [ $1 == "-u" ]
 then
     imdisk -D -m L:

@@ -37,14 +37,141 @@ start:
     mov ss, ax
     mov sp, 0x7C00
 
+    push es
+    push word .after
+    retf
+.after:
     mov si, msg_loading
     call print
+
+    ; read from floppy
+    mov [ebr_drive_number], dl
+
+    ; read drive parameters
+    push es
+    mov ah, 08h
+    int 13h
+    jc floppy_error
+    pop es
+
+    and cl, 0x3F
+    xor ch, ch
+    mov [bpb_sectors_per_track], cx
+
+    inc dh
+    mov [bpb_heads], dh
+
+    ; read FAT root directory
+    mov ax, [bpb_sectors_per_fat]
+    mov bl, [bpb_fat_count]
+    xor bh, bh
+    mul bx
+    add ax, [bpb_reserved_sectors]
+    push ax
+
+    mov ax, [bpb_sectors_per_fat]
+    shl ax, 5
+    xor dx, dx
+    div word [bpb_bytes_per_sector]
+
+    test dx, dx
+    jz .root_dir_after
+    inc ax
+
+.root_dir_after:
+
+    mov cl, al
+    pop ax
+    mov dl, [ebr_drive_number]
+    mov bx, buffer
+    call read_disk
+
+    ; search for kernel.bin
+    xor bx, bx
+    mov di, buffer
+
+.search_kernel:
+    mov si, kernel_file_name
+    mov cx, 11
+    push di
+    repe cmpsb
+    pop di
+    je .found_kernel
+
+    add di, 32
+    inc bx
+    cmp bx, [bpb_dir_entries_count]
+    jl .search_kernel
+
+    jmp kernel_not_found
+
+.found_kernel:
+
+    mov ax, [di + 26]
+    mov [kernel_cluster], ax
+
+    mov ax, [bpb_reserved_sectors]
+    mov bx, buffer
+    mov cl, [bpb_sectors_per_fat]
+    mov dl, [ebr_drive_number]
+    call read_disk
+
+    mov bx, KERNEL_LOAD_SEGMENT
+    mov es, bx
+    mov bx, KERNEL_LOAD_OFFSET
+
+.load_kernel_loop:
+    mov ax, [kernel_cluster]
+
+    add ax, 31                  ;TODO
+
+    mov cl, 1
+    mov dl, [ebr_drive_number]
+    call read_disk
+
+    add bx, [bpb_bytes_per_sector]
+
+    mov ax, [kernel_cluster]
+    mov cx, 3
+    mul cx
+    mov cx, 2
+
+    div cx
+
+    mov si, buffer
+    add si, ax
+    mov ax, [ds:si]
+
+    or dx, dx
+    jz .even
+.odd:
+    shr ax, 4
+    jmp .next_cluster_after
+.even:
+    and ax, 0x0FF
+.next_cluster_after:
+    cmp ax, 0x0FF
+    jae .read_finish
+
+    mov [kernel_cluster], ax
+    jmp .load_kernel_loop
+
+.read_finish:
+    mov dl, [ebr_drive_number]
+    mov ax, KERNEL_LOAD_SEGMENT
+    mov ds, ax
+    mov es, ax
+
+    jmp KERNEL_LOAD_SEGMENT:KERNEL_LOAD_OFFSET
+
+    jmp wait_for_key_and_reboot
 
     hlt
 
 .halt:
     cli
     jmp .halt
+    hlt
 
 ; Converts an LBA address to a CHS address
 ; Parameters:
@@ -144,6 +271,11 @@ floppy_error:
     call print
     jmp wait_for_key_and_reboot
 
+kernel_not_found:
+    mov si, msg_kernel_not_found
+    call print
+    jmp wait_for_key_and_reboot
+
 wait_for_key_and_reboot:
     mov ah, 0
     int 16h
@@ -178,6 +310,14 @@ print:
 
 msg_loading:            db 'Loading kernel...', ENDL, 0
 msg_floppy_read_error:  db 'Floppy error!', ENDL, 0
+msg_kernel_not_found:   db 'k not found', ENDL, 0    ;msg_kernel_not_found:   db 'kernel.bin file not found!', ENDL, 0
+msg_d:   db 'D', ENDL, 0
+kernel_file_name:       db 'KERNEL  BIN'
+kernel_cluster:         db 0
+
+KERNEL_LOAD_SEGMENT:    equ 0x2000
+KERNEL_LOAD_OFFSET:     equ 0
 
 times 510 - ($ - $$) db 0
 dw 0xAA55
+buffer:
