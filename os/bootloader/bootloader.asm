@@ -28,8 +28,49 @@ ebr_volume_label:          db 'BedOS      '      ; 11 bytes
 ebr_fat_identifier:        db 'FAT12   '         ;  2 bytes
 
 start:
+    ; setup data segments
+    mov ax, 0
+    mov ds, ax
+    mov es, ax
+
+    ; setup stack
+    mov ss, ax
+    mov sp, 0x7C00
+
+    mov si, msg_hello
+    call print
+
     hlt
 
 .halt:
     cli
     jmp .halt
+
+;
+; Prints string to the screen
+; Parameters
+;   si: string address
+print:
+    push si
+    push ax
+    push bx
+
+.loop:
+    lodsb
+    or al, al
+    jz .done
+
+    mov ah, 0x0E
+    mov bh, 0
+    pusha
+    int 0x10
+    popa
+    jmp .loop
+
+.done:
+    pop bx
+    pop ax
+    pop si
+    ret
+
+msg_hello: db 'Hello World!', ENDL, 0
