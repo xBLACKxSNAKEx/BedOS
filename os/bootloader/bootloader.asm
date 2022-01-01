@@ -37,7 +37,7 @@ start:
     mov ss, ax
     mov sp, 0x7C00
 
-    mov si, msg_hello
+    mov si, msg_loading
     call print
 
     hlt
@@ -176,7 +176,8 @@ print:
     pop si
     ret
 
-msg_hello: db '', ENDL, 0
+msg_loading:            db 'Loading kernel...', ENDL, 0
+msg_floppy_read_error:  db 'Floppy error!', ENDL, 0
 
 times 510 - ($ - $$) db 0
 dw 0xAA55
