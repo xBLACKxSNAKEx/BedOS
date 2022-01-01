@@ -21,7 +21,8 @@ floppy_image: build
 # BOOTLOADER
 #
 bootloader: always
-	${ASM} ${SRC_DIR}/bootloader/bootloader.asm -f bin -o ${BUILD_DIR}/bootloader/bootloader.bin
+	${ASM} ${SRC_DIR}/bootloader/bootloader_stage1.asm -f bin -o ${BUILD_DIR}/bootloader/bootloader.bin
+	${ASM} ${SRC_DIR}/bootloader/bootloader_stage2.asm -f bin -o ${BUILD_DIR}/bootloader/stage2.bin
 
 #
 # KERNEL

@@ -91,7 +91,7 @@ start:
     mov di, buffer
 
 .search_kernel:
-    mov si, kernel_file_name
+    mov si, next_stage_file_name
     mov cx, 11
     push di
     repe cmpsb
@@ -108,7 +108,7 @@ start:
 .found_kernel:
 
     mov ax, [di + 26]
-    mov [kernel_cluster], ax
+    mov [next_stage_cluster], ax
 
     mov ax, [bpb_reserved_sectors]
     mov bx, buffer
@@ -116,12 +116,12 @@ start:
     mov dl, [ebr_drive_number]
     call read_disk
 
-    mov bx, KERNEL_LOAD_SEGMENT
+    mov bx, NEXT_STAGE_LOAD_SEGMENT
     mov es, bx
-    mov bx, KERNEL_LOAD_OFFSET
+    mov bx, NEXT_STAGE_LOAD_OFFSET
 
 .load_kernel_loop:
-    mov ax, [kernel_cluster]
+    mov ax, [next_stage_cluster]
 
     add ax, 31                  ;TODO
 
@@ -131,7 +131,7 @@ start:
 
     add bx, [bpb_bytes_per_sector]
 
-    mov ax, [kernel_cluster]
+    mov ax, [next_stage_cluster]
     mov cx, 3
     mul cx
     mov cx, 2
@@ -153,16 +153,16 @@ start:
     cmp ax, 0x0FF
     jae .read_finish
 
-    mov [kernel_cluster], ax
+    mov [next_stage_cluster], ax
     jmp .load_kernel_loop
 
 .read_finish:
     mov dl, [ebr_drive_number]
-    mov ax, KERNEL_LOAD_SEGMENT
+    mov ax, NEXT_STAGE_LOAD_SEGMENT
     mov ds, ax
     mov es, ax
 
-    jmp KERNEL_LOAD_SEGMENT:KERNEL_LOAD_OFFSET
+    jmp NEXT_STAGE_LOAD_SEGMENT:NEXT_STAGE_LOAD_OFFSET
 
     jmp wait_for_key_and_reboot
 
@@ -312,11 +312,11 @@ msg_loading:            db 'Loading kernel...', ENDL, 0
 msg_floppy_read_error:  db 'Floppy error!', ENDL, 0
 msg_kernel_not_found:   db 'k not found', ENDL, 0    ;msg_kernel_not_found:   db 'kernel.bin file not found!', ENDL, 0
 msg_d:   db 'D', ENDL, 0
-kernel_file_name:       db 'KERNEL  BIN'
-kernel_cluster:         db 0
+next_stage_file_name:       db 'STAGE2  BIN'
+next_stage_cluster:         db 0
 
-KERNEL_LOAD_SEGMENT:    equ 0x2000
-KERNEL_LOAD_OFFSET:     equ 0
+NEXT_STAGE_LOAD_SEGMENT:    equ 0x2000
+NEXT_STAGE_LOAD_OFFSET:     equ 0
 
 times 510 - ($ - $$) db 0
 dw 0xAA55
