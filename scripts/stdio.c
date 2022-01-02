@@ -16,28 +16,27 @@ void puts(const char *str)
 }
 
 #define PRINTF_STATE_NORMAL 0
-#define PRINTF_STATE_FLAGS 1
-#define PRINTF_STATE_WIDTH 2
-#define PRINTF_STATE_PRECISION 3
-#define PRINTF_STATE_LENGTH 4
-#define PRINTF_STATE_SPECIFIER 5
+#define PRINTF_STATE_LENGTH 1
+#define PRINTF_STATE_LENGTH_SHORT 2
+#define PRINTF_STATE_LENGTH_LONG 3
+#define PRINTF_STATE_SPEC 4
 
 #define PRINTF_LENGTH_DEFAULT 0
-#define PRINTF_LENGTH_SHORT 1
-#define PRINTF_LENGTH_SHORT_SHORT 2
+#define PRINTF_LENGTH_SHORT_SHORT 1
+#define PRINTF_LENGTH_SHORT 2
 #define PRINTF_LENGTH_LONG 3
 #define PRINTF_LENGTH_LONG_LONG 4
-#define PRINTF_LENGTH_SIZE_T 5
 
-int *printf_number(int *argp, int length, bool sign, int radix, bool toUpperCase);
+int *printf_number(int *argp, int length, bool sign, int radix);
 
 void _cdecl printf(const char *fmt, ...)
 {
+    int *argp = (int *)&fmt;
     int state = PRINTF_STATE_NORMAL;
     int length = PRINTF_LENGTH_DEFAULT;
-    bool sign = false;
     int radix = 10;
-    int *argp = (int *)&fmt;
+    bool sign = false;
+
     argp++;
 
     while (*fmt)
@@ -45,11 +44,15 @@ void _cdecl printf(const char *fmt, ...)
         switch (state)
         {
         case PRINTF_STATE_NORMAL:
-            if (*fmt == '%')
+            switch (*fmt)
+            {
+            case '%':
                 state = PRINTF_STATE_LENGTH;
-            else
+                break;
+            default:
                 putc(*fmt);
-            fmt++;
+                break;
+            }
             break;
 
         case PRINTF_STATE_LENGTH:
@@ -57,94 +60,110 @@ void _cdecl printf(const char *fmt, ...)
             {
             case 'h':
                 length = PRINTF_LENGTH_SHORT;
-                fmt++;
-                if (*fmt == 'h')
-                {
-                    length = PRINTF_LENGTH_SHORT_SHORT;
-                    fmt++;
-                }
+                state = PRINTF_STATE_LENGTH_SHORT;
                 break;
-
             case 'l':
                 length = PRINTF_LENGTH_LONG;
-                fmt++;
-                if (*fmt == 'l')
+                state = PRINTF_STATE_LENGTH_LONG;
+                break;
+            default:
+                goto PRINTF_STATE_SPEC_;
+            }
+            break;
+
+        case PRINTF_STATE_LENGTH_SHORT:
+            if (*fmt == 'h')
+            {
+                length = PRINTF_LENGTH_SHORT_SHORT;
+                state = PRINTF_STATE_SPEC;
+            }
+            else
+                goto PRINTF_STATE_SPEC_;
+            break;
+
+        case PRINTF_STATE_LENGTH_LONG:
+            if (*fmt == 'l')
+            {
+                length = PRINTF_LENGTH_LONG_LONG;
+                state = PRINTF_STATE_SPEC;
+            }
+            else
+                goto PRINTF_STATE_SPEC_;
+            break;
+
+        case PRINTF_STATE_SPEC:
+        PRINTF_STATE_SPEC_:
+            switch (*fmt)
+            {
+            case 'c':
+                putc((char)*argp);
+                argp++;
+                break;
+
+            case 's':
+                if (length == PRINTF_LENGTH_LONG || length == PRINTF_LENGTH_LONG_LONG)
                 {
-                    length = PRINTF_LENGTH_LONG_LONG;
-                    fmt++;
+                    puts_f(*(const char far **)argp);
+                    argp += 2;
+                }
+                else
+                {
+                    puts(*(const char **)argp);
+                    argp++;
                 }
                 break;
 
-            case 'z':
-                length = PRINTF_LENGTH_SIZE_T;
-                fmt++;
+            case '%':
+                putc('%');
                 break;
 
-            default:
-                length = PRINTF_LENGTH_DEFAULT;
-                break;
-            }
-            state = PRINTF_STATE_SPECIFIER;
-            break;
-
-        case PRINTF_STATE_SPECIFIER:
-            switch (*fmt)
-            {
             case 'd':
             case 'i':
                 radix = 10;
                 sign = true;
-                argp = printf_number(argp, length, sign, radix, false);
+                argp = printf_number(argp, length, sign, radix);
                 break;
 
             case 'u':
                 radix = 10;
                 sign = false;
-                argp = printf_number(argp, length, sign, radix, false);
+                argp = printf_number(argp, length, sign, radix);
                 break;
-            case 'o':
-                radix = 8;
-                sign = false;
-                argp = printf_number(argp, length, sign, radix, false);
-                break;
+
+            case 'X':
+            case 'x':
             case 'p':
                 radix = 16;
                 sign = false;
-                argp = printf_number(argp, length, sign, radix, false);
+                argp = printf_number(argp, length, sign, radix);
                 break;
-            case 'x':
-                radix = 16;
+
+            case 'o':
+                radix = 8;
                 sign = false;
-                argp = printf_number(argp, length, sign, radix, false);
+                argp = printf_number(argp, length, sign, radix);
                 break;
-            case 'X':
-                radix = 16;
-                sign = false;
-                argp = printf_number(argp, length, sign, radix, true);
-                break;
-            case 'c':
-                putc((char)*argp);
-                argp++;
-                break;
-            case 's':
-                puts((char *)*argp);
-                argp++;
-                break;
-            case '%':
-                putc('%');
+
+            // ignore invalid spec
+            default:
                 break;
             }
-            fmt++;
+
+            // reset state
             state = PRINTF_STATE_NORMAL;
+            length = PRINTF_LENGTH_DEFAULT;
+            radix = 10;
+            sign = false;
             break;
         }
+
+        fmt++;
     }
 }
 
 const char g_HexChars[] = "0123456789abcdef";
-const char g_HexChars_u[] = "0123456789ABCDEF";
 
-int *printf_number(int *argp, int length, bool sign, int radix, bool toUpperCase)
+int *printf_number(int *argp, int length, bool sign, int radix)
 {
     char buffer[32];
     unsigned long long number;
@@ -216,10 +235,7 @@ int *printf_number(int *argp, int length, bool sign, int radix, bool toUpperCase
     {
         uint32_t rem;
         x86_div_64_32(number, radix, &number, &rem);
-        if (toUpperCase)
-            buffer[pos++] = g_HexChars_u[rem];
-        else
-            buffer[pos++] = g_HexChars[rem];
+        buffer[pos++] = g_HexChars[rem];
     } while (number > 0);
 
     // add sign
