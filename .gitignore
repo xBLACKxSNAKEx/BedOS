@@ -1,6 +1,10 @@
 # Object files
 *.o
 
+# Linker files
+*.map
+*.err
+
 # Executable files
 *.bin
 *.exe

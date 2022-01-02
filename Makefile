@@ -1,13 +1,20 @@
 ASM := ./tools/nasm
 
 BUILD_DIR = build
+TOOLS_DIR = tools
 SRC_DIR = os
 
-.PHONY: all floppy_image build kernel bootloader clean always
+.PHONY: all floppy_image build kernel bootloader mount unmount clean always
 
 all: floppy_image
 
 build: bootloader kernel
+
+mount:
+	./scripts/mount.sh
+
+unmount:
+	./scripts/mount.sh -u
 
 #
 # FLOPPY IMAGE
@@ -21,8 +28,8 @@ floppy_image: build
 # BOOTLOADER
 #
 bootloader: always
-	${ASM} ${SRC_DIR}/bootloader/bootloader_stage1.asm -f bin -o ${BUILD_DIR}/bootloader/bootloader.bin
-	${ASM} ${SRC_DIR}/bootloader/bootloader_stage2.asm -f bin -o ${BUILD_DIR}/bootloader/stage2.bin
+	${MAKE} -C ${SRC_DIR}/bootloader
+# BUILD_DIR=$(abspath $(BUILD_DIR))
 
 #
 # KERNEL
