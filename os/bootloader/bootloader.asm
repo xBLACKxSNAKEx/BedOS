@@ -281,6 +281,7 @@ wait_for_key_and_reboot:
     int 16h
     jmp 0FFFFh:0
 
+
 ;
 ; Prints string to the screen
 ; Parameters
@@ -310,8 +311,8 @@ print:
 
 msg_loading:            db 'Loading kernel...', ENDL, 0
 msg_floppy_read_error:  db 'Floppy error!', ENDL, 0
-msg_kernel_not_found:   db 'k not found', ENDL, 0    ;msg_kernel_not_found:   db 'kernel.bin file not found!', ENDL, 0
-msg_d:   db 'D', ENDL, 0
+msg_kernel_not_found:   db 'kernel.bin file not found!', ENDL, 0
+
 next_stage_file_name:       db 'STAGE2  BIN'
 next_stage_cluster:         db 0
 

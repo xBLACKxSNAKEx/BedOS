@@ -29,7 +29,6 @@ floppy_image: build
 #
 bootloader: always
 	${MAKE} -C ${SRC_DIR}/bootloader
-# BUILD_DIR=$(abspath $(BUILD_DIR))
 
 #
 # KERNEL
