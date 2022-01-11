@@ -1,0 +1,7 @@
+romimage: file="C:\Program Files\Bochs-2.7/BIOS-bochs-latest", address=0x00000000, options=none
+vgaromimage: file="C:\Program Files\Bochs-2.7/VGABIOS-lgpl-latest"
+floppya: 1_44="D:\Programming\BedOS\build\floppy.img", status=inserted
+boot: floppy
+memory: host=1024, guest=128
+display_library: options="gui_debug"
+mouse: enabled=0

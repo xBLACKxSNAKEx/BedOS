@@ -4,6 +4,8 @@ BUILD_DIR = build
 TOOLS_DIR = tools
 SRC_DIR = os
 
+CC = i686-elf-gcc
+
 .PHONY: all floppy_image build kernel bootloader mount unmount clean always
 
 all: floppy_image
@@ -34,7 +36,7 @@ bootloader: always
 # KERNEL
 #
 kernel: always
-	${ASM} ${SRC_DIR}/kernel/kernel.asm -f bin -o ${BUILD_DIR}/kernel/kernel.bin
+	${MAKE} -C ${SRC_DIR}/kernel
 
 #
 # ALWAYS

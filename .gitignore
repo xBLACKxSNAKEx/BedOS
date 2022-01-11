@@ -9,7 +9,14 @@
 *.bin
 *.exe
 
+# Log files
+*.log
+
+# package files
+*.tar*
+
 # Custom
-tools
+tools/gcc-*
+tools/binutils-*
 build
 .vscode

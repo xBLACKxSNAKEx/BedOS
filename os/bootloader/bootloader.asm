@@ -23,7 +23,7 @@ bpb_large_sector_count:    dd 0                  ;  4 bytes
 ebr_drive_number:          db 0                  ;  1 byte
 ebr_windows_flags:         db 0                  ;  1 byte 
 ebr_signature:             db 28h                ;  1 byte
-ebr_volume_SN:             db 12h, 34h, 56h, 78h ;  4 bytes
+ebr_volume_SN:             dd 12346578h          ;  4 bytes
 ebr_volume_label:          db 'BedOS      '      ; 11 bytes
 ebr_fat_identifier:        db 'FAT12   '         ;  2 bytes
 
@@ -36,6 +36,8 @@ start:
     ; setup stack
     mov ss, ax
     mov sp, 0x7C00
+
+    cli
 
     push es
     push word .after
@@ -313,7 +315,7 @@ msg_loading:            db 'Loading kernel...', ENDL, 0
 msg_floppy_read_error:  db 'Floppy error!', ENDL, 0
 msg_kernel_not_found:   db 'kernel.bin file not found!', ENDL, 0
 
-next_stage_file_name:       db 'STAGE2  BIN'
+next_stage_file_name:       db 'BOOT    BIN'
 next_stage_cluster:         db 0
 
 NEXT_STAGE_LOAD_SEGMENT:    equ 0x2000

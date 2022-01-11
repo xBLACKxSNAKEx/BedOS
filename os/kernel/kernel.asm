@@ -4,8 +4,6 @@ bits 16
 %define ENDL 0x0D, 0x0A
 
 start:
-    mov ah, 0
-    int 16h
     mov si, msg_kernel
     call print
     

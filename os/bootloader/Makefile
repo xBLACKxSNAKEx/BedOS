@@ -5,6 +5,8 @@ SRC_DIR?=../../os
 
 # Compilation tools
 ASM?=${TOOLS_DIR}/nasm.exe
+CC?=
+LD?= 
 
 # Files
 
@@ -15,7 +17,7 @@ all: build
 
 build:
 	${ASM} ${SRC_DIR}/bootloader/bootloader.asm -f bin -o ${BUILD_DIR}/bootloader/bootloader.bin
-	${ASM} ${SRC_DIR}/bootloader/bootloader_loaded.asm -f bin -o ${BUILD_DIR}/bootloader/bootloaderL.bin
+	${ASM} ${SRC_DIR}/bootloader/boot.asm -f bin -o ${BUILD_DIR}/bootloader/boot.bin
 
 
 clean:
