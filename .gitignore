@@ -12,6 +12,10 @@
 # Log files
 *.log
 
+# debug files
+*.bxrc
+bx_enh_dbg.ini
+
 # package files
 *.tar*
 

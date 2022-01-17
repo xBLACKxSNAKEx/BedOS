@@ -1,7 +1,7 @@
 # Directories
-BUILD_DIR?=../../build
-TOOLS_DIR?=../../tools
-SRC_DIR?=../../os
+BUILD_DIR?=$(abspath ../../build)
+TOOLS_DIR?=$(abspath ../../tools)
+SRC_DIR?=$(abspath ../../os)
 
 # Compilation tools
 ASM?=${TOOLS_DIR}/nasm.exe
@@ -10,14 +10,13 @@ LD?=
 
 # Files
 
-
 .PHONY: all build clean
 
 all: build
 
 build:
 	${ASM} ${SRC_DIR}/bootloader/bootloader.asm -f bin -o ${BUILD_DIR}/bootloader/bootloader.bin
-	${ASM} ${SRC_DIR}/bootloader/boot.asm -f bin -o ${BUILD_DIR}/bootloader/boot.bin
+#	${ASM} ${SRC_DIR}/bootloader/boot.asm -f bin -o ${BUILD_DIR}/bootloader/boot.bin
 
 
 clean:
