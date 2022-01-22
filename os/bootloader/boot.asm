@@ -1,12 +1,10 @@
-org 0
+org 0x8000
 bits 16
-
-; 0x7d27
 
 %define ENDL 0x0D, 0x0A
 
 jmp start
-
+nop
 g_GDT:
     ; NULL
     dw 0x0000
@@ -45,17 +43,14 @@ start:
     .next:
     lgdt [g_GDTD]
 
-    mov eax, cr0
-    or al, 1
-    mov cr0, eax
+    mov si, msg_test
+    call print
 
+    mov ebx, cr0
+    or ebx, 1
+    mov cr0, ebx
+    
     jmp 08h:pmode
-
-    hlt
- 
-[bits 32]
-pmode:
-
     hlt
 
 ; Function: A20_enable
@@ -65,7 +60,6 @@ pmode:
 ; Returns: nothing
 
 A20_enable:
-[bits 16]
     push ax
     ; disable keyboard
     call A20_wait_out
@@ -124,7 +118,6 @@ A20_wait_in:
 ;          1 in ax if the a20 line is enabled (memory does not wrap around)
  
 A20_check:
-[bits 16]
     pushf
     push ds
     push es
@@ -176,7 +169,6 @@ A20_check:
 ; Parameters
 ;   si: string address
 print:
-[bits 16]
     push si
     push ax
     push bx
@@ -198,5 +190,21 @@ print:
     pop ax
     pop si
     ret
+
+pmode:
+[bits 32]
+    
+    mov [0xb8000], byte 'B'
+    mov [0xb8002], byte 'e'
+    mov [0xb8004], byte 'd'
+    mov [0xb8006], byte 'O'
+    mov [0xb8008], byte 'S'
+    mov [0xb800a], byte ' '
+    mov [0xb800c], byte ' '
+
+    ; Jump to kernel
+    ; jmp 08h:0x9000
+
+    hlt
 
 msg_test: db 'TEST', ENDL, 0

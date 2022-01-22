@@ -1,7 +1,7 @@
 # Directories
-BUILD_DIR?=../../build
-TOOLS_DIR?=../../tools
-SRC_DIR?=../../os
+BUILD_DIR?=$(abspath ../../build)
+TOOLS_DIR?=$(abspath ../../tools)
+SRC_DIR?=$(abspath ../../os)
 
 # Compilation tools
 ASM?=${TOOLS_DIR}/nasm.exe
@@ -9,7 +9,6 @@ CC?=
 LD?= 
 
 # Files
-
 
 .PHONY: all build clean
 
