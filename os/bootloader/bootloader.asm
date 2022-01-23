@@ -124,7 +124,7 @@ start:
 .load_kernel_loop:
     mov ax, [next_stage_cluster]
 
-    add ax, 31                  ;TODO
+    add ax, 31                  ; TODO: Change from static value
 
     mov cl, 1
     mov dl, [ebr_drive_number]

@@ -46,4 +46,5 @@ always:
 	mkdir -p ${BUILD_DIR}/kernel
 
 clean:
+	rm -rf $(SRC_DIR)/*/obj/*
 	rm -rf ${BUILD_DIR}

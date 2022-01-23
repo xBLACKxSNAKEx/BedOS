@@ -1,5 +1,6 @@
 # Object files
 *.o
+*.d
 
 # Linker files
 *.map
@@ -23,4 +24,5 @@ bx_enh_dbg.ini
 tools/gcc-*
 tools/binutils-*
 build
+os/*/obj
 .vscode

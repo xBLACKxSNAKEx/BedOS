@@ -202,7 +202,9 @@ pmode:
     mov [0xb800a], byte ' '
     mov [0xb800c], byte ' '
 
-    ; Jump to kernel
+    ; TODO: Load required dependencies
+
+    ; TODO: Jump to kernel
     ; jmp 08h:0x9000
 
     hlt
