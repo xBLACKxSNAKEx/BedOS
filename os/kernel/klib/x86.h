@@ -54,3 +54,20 @@ static inline void outl(uint16_t port, uint32_t val)
             : "a"(val), "Nd"(port));
     io_wait();
 }
+
+static inline void enable_interrupts()
+{
+    __asm__("sti" ::);
+}
+
+static inline void disable_interrupts()
+{
+    __asm__("cli" ::);
+}
+
+static inline void wait()
+{
+    __asm__("outb %%al, $0x80"
+            :
+            : "a"(0));
+}

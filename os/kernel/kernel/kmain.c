@@ -1,10 +1,11 @@
 #include "stdio/stdio.h"
+#include "cpu/gdt.h"
 
 static void kmain();
 
 void kernel_early_main()
 {
-	// initialize gdt
+	GDT_init();
 	// initialize paging
 	VGA_init(VGA_MODE_03H);
 	//_init();
