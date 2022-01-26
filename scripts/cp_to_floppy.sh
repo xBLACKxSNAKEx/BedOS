@@ -1,8 +1,6 @@
 #!/bin/bash
 
 ./scripts/mount.sh
-cp build/bootloader/stage2.bin L:/
-cd build/kernel
-cp -r . L:/
-cd ../..
+cp build/bin/kernel/kernel.bin L:/
+rm -rf L:/L
 ./scripts/mount.sh -u

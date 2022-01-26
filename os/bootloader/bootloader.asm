@@ -5,6 +5,7 @@ bits 16
 
 jmp start
 nop
+
 bpb_oem:                   db 'MSWIN4.1'         ;  8 bytes
 bpb_bytes_per_sector:      dw 512                ;  2 bytes
 bpb_sectors_per_cluster:   db 1                  ;  1 byte
@@ -69,7 +70,7 @@ start:
     add ax, [bpb_reserved_sectors]
     push ax
 
-    mov ax, [bpb_sectors_per_fat]
+    mov ax, [bpb_dir_entries_count]
     shl ax, 5
     xor dx, dx
     div word [bpb_bytes_per_sector]
@@ -123,7 +124,7 @@ start:
 .load_kernel_loop:
     mov ax, [next_stage_cluster]
 
-    add ax, 31                  ;TODO
+    add ax, 31                  ; TODO: Change from static value
 
     mov cl, 1
     mov dl, [ebr_drive_number]
@@ -148,9 +149,9 @@ start:
     shr ax, 4
     jmp .next_cluster_after
 .even:
-    and ax, 0x0FF
+    and ax, 0x0FFF
 .next_cluster_after:
-    cmp ax, 0x0FF
+    cmp ax, 0x0FF8
     jae .read_finish
 
     mov [next_stage_cluster], ax
@@ -212,8 +213,10 @@ lba_2_chs:
 ;   - es:bx: memory address where to store read data
 ;
 read_disk:
+
     push ax
     push bx
+    push cx
     push dx
     push di
 
@@ -248,6 +251,7 @@ read_disk:
     popa
     pop di
     pop dx
+    pop cx
     pop bx
     pop ax
     ret
@@ -279,7 +283,7 @@ kernel_not_found:
 wait_for_key_and_reboot:
     mov ah, 0
     int 16h
-    jmp 0FFFFh:0
+    jmp 0xFFFF:0
 
 ;
 ; Prints string to the screen
@@ -293,7 +297,7 @@ print:
 .loop:
     lodsb
     or al, al
-    jz .done
+    jz .print_done
 
     mov ah, 0x0E
     mov bh, 0
@@ -302,21 +306,21 @@ print:
     popa
     jmp .loop
 
-.done:
+.print_done:
     pop bx
     pop ax
     pop si
     ret
 
-msg_loading:            db 'Loading kernel...', ENDL, 0
-msg_floppy_read_error:  db 'Floppy error!', ENDL, 0
-msg_kernel_not_found:   db 'k not found', ENDL, 0    ;msg_kernel_not_found:   db 'kernel.bin file not found!', ENDL, 0
-msg_d:   db 'D', ENDL, 0
-next_stage_file_name:       db 'STAGE2  BIN'
-next_stage_cluster:         db 0
+msg_loading:                db 'Loading kernel...', ENDL, 0
+msg_floppy_read_error:      db 'Floppy error!', ENDL, 0
+msg_kernel_not_found:       db 'File not found!', ENDL, 0
 
-NEXT_STAGE_LOAD_SEGMENT:    equ 0x2000
-NEXT_STAGE_LOAD_OFFSET:     equ 0
+next_stage_file_name:       db 'KERNEL  BIN'
+next_stage_cluster:         db 0x0
+
+NEXT_STAGE_LOAD_SEGMENT:    equ 0x0
+NEXT_STAGE_LOAD_OFFSET:     equ 0x8000
 
 times 510 - ($ - $$) db 0
 dw 0xAA55
