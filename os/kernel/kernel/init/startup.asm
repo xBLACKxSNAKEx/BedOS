@@ -35,6 +35,7 @@ g_GDTD:
 
 start:
     cli
+    call get_memory_map
     call A20_check
     test ax, 0
     jnz .next
@@ -160,6 +161,51 @@ A20_check:
  
     ret
 
+; TODO: get memory map from BIOS
+global get_memory_map
+get_memory_map:
+;    memory_map_address
+    pusha
+    push ax
+    push bx
+    push cx
+    push es
+    push di
+    push ebp
+    mov eax, 0
+    mov es, eax
+    mov di, memory_map_address
+    xor ebx, ebx
+    xor ebp, ebp
+    .loop:
+    mov edx, 0x534D4150
+    mov eax, 0xE820
+    mov [es:di + 20], dword 1
+    mov ecx, 24
+    int 15h
+    jc .done     ; error
+
+    or ebx, ebx  ; no more entries
+    jz .done
+
+    or ecx, ecx  ; returned length is 0
+    jz .loop
+
+    add di, 24
+    inc ebp
+
+    jmp .loop
+    .done:
+    mov [0x500], ebp
+    pop ebp
+    pop di
+    pop es
+    pop cx
+    pop bx
+    pop ax
+    popa
+    ret
+
 pmode:
 [bits 32]
 
@@ -168,3 +214,5 @@ pmode:
 
     hlt
     
+memory_map_count_address: equ 0x500
+memory_map_address:       equ 0x501
