@@ -163,8 +163,8 @@ A20_check:
 pmode:
 [bits 32]
 
-    extern kernel_early_main
-    call kernel_early_main
+    extern kmain
+    call kmain
 
     hlt
     
