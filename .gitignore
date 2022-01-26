@@ -23,6 +23,7 @@ bx_enh_dbg.ini
 # Custom
 tools/gcc-*
 tools/binutils-*
+tools/mingw-w64-x86_64-*
 build
 os/*/obj
 .vscode

@@ -1,5 +1,4 @@
-org 0x8000
-bits 16
+[bits 16]
 
 %define ENDL 0x0D, 0x0A
 
@@ -36,15 +35,13 @@ g_GDTD:
 
 start:
     cli
+    call get_memory_map
     call A20_check
     test ax, 0
     jnz .next
     call A20_enable
     .next:
     lgdt [g_GDTD]
-
-    mov si, msg_test
-    call print
 
     mov ebx, cr0
     or ebx, 1
@@ -164,49 +161,58 @@ A20_check:
  
     ret
 
-;
-; Prints string to the screen
-; Parameters
-;   si: string address
-print:
-    push si
+; TODO: get memory map from BIOS
+global get_memory_map
+get_memory_map:
+;    memory_map_address
+    pusha
     push ax
     push bx
+    push cx
+    push es
+    push di
+    push ebp
+    mov eax, 0
+    mov es, eax
+    mov di, memory_map_address
+    xor ebx, ebx
+    xor ebp, ebp
+    .loop:
+    mov edx, 0x534D4150
+    mov eax, 0xE820
+    mov [es:di + 20], dword 1
+    mov ecx, 24
+    int 15h
+    jc .done     ; error
 
-.loop:
-    lodsb
-    or al, al
+    or ebx, ebx  ; no more entries
     jz .done
 
-    mov ah, 0x0E
-    mov bh, 0
-    pusha
-    int 0x10
-    popa
-    jmp .loop
+    or ecx, ecx  ; returned length is 0
+    jz .loop
 
-.done:
+    add di, 24
+    inc ebp
+
+    jmp .loop
+    .done:
+    mov [0x500], ebp
+    pop ebp
+    pop di
+    pop es
+    pop cx
     pop bx
     pop ax
-    pop si
+    popa
     ret
 
 pmode:
 [bits 32]
-    
-    mov [0xb8000], byte 'B'
-    mov [0xb8002], byte 'e'
-    mov [0xb8004], byte 'd'
-    mov [0xb8006], byte 'O'
-    mov [0xb8008], byte 'S'
-    mov [0xb800a], byte ' '
-    mov [0xb800c], byte ' '
 
-    ; TODO: Load required dependencies
-
-    ; TODO: Jump to kernel
-    ; jmp 08h:0x9000
+    extern kernel_early_main
+    call kernel_early_main
 
     hlt
 
-msg_test: db 'TEST', ENDL, 0
+memory_map_count_address: equ 0x500
+memory_map_address:       equ 0x501

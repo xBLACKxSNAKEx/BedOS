@@ -316,7 +316,7 @@ msg_loading:                db 'Loading kernel...', ENDL, 0
 msg_floppy_read_error:      db 'Floppy error!', ENDL, 0
 msg_kernel_not_found:       db 'File not found!', ENDL, 0
 
-next_stage_file_name:       db 'BOOT    BIN'
+next_stage_file_name:       db 'KERNEL  BIN'
 next_stage_cluster:         db 0x0
 
 NEXT_STAGE_LOAD_SEGMENT:    equ 0x0

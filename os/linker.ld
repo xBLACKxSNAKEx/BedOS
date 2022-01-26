@@ -6,13 +6,13 @@ KERNEL_PHYSICAL_ADDRESS  = 0x00009000;
 SECTIONS
 {
 	. = STARTUP_PHYSICAL_ADDRESS;
-
-	. = KERNEL_PHYSICAL_ADDRESS;
 	
 	.boot :
 	{
-		obj/asm/init/startup.o
+		../../build/obj/asm/kernel/init/startup.o
 	}
+
+	. = KERNEL_PHYSICAL_ADDRESS;
 
 	.text ALIGN(4K) : AT(ADDR(.text))
 	{

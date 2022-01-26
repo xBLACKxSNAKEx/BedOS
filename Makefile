@@ -24,7 +24,7 @@ unmount:
 floppy_image: build
 	dd if=/dev/zero of=${BUILD_DIR}/floppy.img bs=512 count=2880
 	mkfs.fat.exe -F 12 -n "FILE" ${BUILD_DIR}/floppy.img
-	dd if=${BUILD_DIR}/bootloader/bootloader.bin of=${BUILD_DIR}/floppy.img conv=notrunc
+	dd if=${BUILD_DIR}/bin/bootloader/bootloader.bin of=${BUILD_DIR}/floppy.img conv=notrunc
 	./scripts/cp_to_floppy.sh
 #
 # BOOTLOADER
@@ -42,9 +42,10 @@ kernel: always
 # ALWAYS
 #
 always:
-	mkdir -p ${BUILD_DIR}/bootloader
-	mkdir -p ${BUILD_DIR}/kernel
+	mkdir -p ${BUILD_DIR}/obj/c
+	mkdir -p ${BUILD_DIR}/obj/asm
+	mkdir -p ${BUILD_DIR}/bin/bootloader
+	mkdir -p ${BUILD_DIR}/bin/kernel
 
 clean:
-	rm -rf $(SRC_DIR)/*/obj/*
 	rm -rf ${BUILD_DIR}
