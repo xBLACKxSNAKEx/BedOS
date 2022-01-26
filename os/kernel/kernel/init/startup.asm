@@ -209,10 +209,10 @@ get_memory_map:
 pmode:
 [bits 32]
 
-    extern kmain
-    call kmain
+    extern kernel_early_main
+    call kernel_early_main
 
     hlt
-    
+
 memory_map_count_address: equ 0x500
 memory_map_address:       equ 0x501

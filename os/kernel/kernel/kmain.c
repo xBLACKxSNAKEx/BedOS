@@ -1,5 +1,17 @@
 #include "stdio/stdio.h"
 
+static void kmain();
+
+void kernel_early_main()
+{
+	// initialize gdt
+	// initialize paging
+	VGA_init(VGA_MODE_03H);
+	//_init();
+	kmain(); 					// give control to real kmain
+	// restart(); 				// if we somehow get here restart PC
+}
+
 typedef struct
 {
 	uint64_t BaseAddr;
