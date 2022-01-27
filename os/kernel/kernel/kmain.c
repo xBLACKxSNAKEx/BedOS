@@ -28,7 +28,7 @@ void kmain()
 	memory_map_descriptor *mmd = (memory_map_descriptor *)(0x501);
 	for (uint8_t i = 0; i < *(uint8_t *)(0x500); i++)
 	{
-		printf("B: %llx, L: %llx, E: %llx, T: %ld\n", mmd->BaseAddr, mmd->Length, mmd->BaseAddr + mmd->Length - 1, mmd->Type);
+		printf("B: %llx, E: %llx, L: %llx, T: %ld\n", mmd->BaseAddr, mmd->BaseAddr + mmd->Length - 1, mmd->Length, mmd->Type);
 		mmd++;
 	}
 	printf("End\n");

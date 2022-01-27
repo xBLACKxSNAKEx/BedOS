@@ -25,8 +25,8 @@ CRTBEGIN_OBJ:=$(shell $(CC) $(CFLAGS) -print-file-name=crtbegin.o)
 CRTEND_OBJ:=$(shell $(CC) $(CFLAGS) -print-file-name=crtend.o)
 CRTN_OBJ:=$(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/c/%.o,$(CRTN_C))
 
-GCC_COMPILE_FLAGS := -I kernel -I libc -I klib -I headers -include headers/typedef.h -ffreestanding -ggdb3 -O0 -Wall -Wextra -Wno-unused-variable -Wno-unused-parameter -Wno-packed-bitfield-compat -fshort-enums -Wno-implicit-function-declaration
-GCC_LINK_FLAGS := -T ../linker.ld -L libc -L klib -nolibc -lgcc -nostdlib
+GCC_COMPILE_FLAGS := -I kernel -I libc -I klib -I headers -include headers/typedef.h -fstack-protector -ffreestanding -ggdb3 -O0 -Wall -Wextra -Wno-unused-variable -Wno-unused-parameter -Wno-packed-bitfield-compat -fshort-enums -Wno-implicit-function-declaration
+GCC_LINK_FLAGS := -T ../linker.ld -L libc -L klib -nolibc -lgcc -nostdlib -fstack-protector
 
 GCC_LINK_FLAGS += -Wl,-Map=output.map
 

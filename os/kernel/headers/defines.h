@@ -4,3 +4,4 @@
 
 #define _packed __attribute__((packed))
 #define _cdecl __attribute__((__cdecl__))
+#define _noreturn __attribute__((noreturn))
