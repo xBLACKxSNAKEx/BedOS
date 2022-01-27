@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include "stdio/stdio.h"
 
+// TODO: initialize with random value in bootloader
 #if UINT32_MAX == UINTPTR_MAX
 #define STACK_CHK_GUARD 0xe2dee396
 #else
